@@ -10,6 +10,7 @@ export async function uploadImage(
   file: File,
   path: string
 ): Promise<{ url: string; path: string } | null> {
+  if (!storage) return null
   try {
     const storageRef = ref(storage, path)
     await uploadBytes(storageRef, file)
@@ -22,6 +23,7 @@ export async function uploadImage(
 }
 
 export async function deleteImage(path: string): Promise<boolean> {
+  if (!storage) return false
   try {
     const storageRef = ref(storage, path)
     await deleteObject(storageRef)
