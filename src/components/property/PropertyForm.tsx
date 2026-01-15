@@ -37,6 +37,9 @@ const propertySchema = z.object({
   description: z.string().optional(),
   built_year: z.string().optional(),
   move_in_date: z.string().optional(),
+  owner_phone: z.string().optional(),
+  door_password: z.string().optional(),
+  owner_desired_price: z.string().optional(),
 })
 
 type PropertyFormData = z.infer<typeof propertySchema>
@@ -86,6 +89,9 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
       description: initialData?.description || '',
       built_year: initialData?.built_year?.toString() || '',
       move_in_date: initialData?.move_in_date || '',
+      owner_phone: initialData?.owner_phone || '',
+      door_password: initialData?.door_password || '',
+      owner_desired_price: initialData?.owner_desired_price?.toString() || '',
     },
   })
 
@@ -140,6 +146,9 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
         built_year: data.built_year ? Number(data.built_year) : null,
         move_in_date: data.move_in_date || null,
         features: selectedFeatures,
+        owner_phone: data.owner_phone || null,
+        door_password: data.door_password || null,
+        owner_desired_price: data.owner_desired_price ? Number(data.owner_desired_price) : null,
       }
 
       let propertyId = initialData?.id
@@ -492,6 +501,49 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
             rows={6}
             placeholder="매물에 대한 상세 설명을 입력하세요"
           />
+        </CardContent>
+      </Card>
+
+      {/* Owner Info - Admin Only */}
+      <Card className="border-orange-200 bg-orange-50/50">
+        <CardHeader>
+          <CardTitle className="text-orange-700">집주인 정보 (관리자 전용)</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-orange-600 mb-4">
+            이 정보는 관리자만 볼 수 있으며, 고객에게는 공개되지 않습니다.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="owner_phone">집주인 전화번호</Label>
+              <Input
+                id="owner_phone"
+                type="tel"
+                {...register('owner_phone')}
+                className="mt-1"
+                placeholder="010-0000-0000"
+              />
+            </div>
+            <div>
+              <Label htmlFor="door_password">현관 비밀번호</Label>
+              <Input
+                id="door_password"
+                {...register('door_password')}
+                className="mt-1"
+                placeholder="예: 1234#"
+              />
+            </div>
+            <div>
+              <Label htmlFor="owner_desired_price">집주인 희망가 (원)</Label>
+              <Input
+                id="owner_desired_price"
+                type="number"
+                {...register('owner_desired_price')}
+                className="mt-1"
+                placeholder="예: 500000000"
+              />
+            </div>
+          </div>
         </CardContent>
       </Card>
 

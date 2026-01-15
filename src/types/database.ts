@@ -70,6 +70,9 @@ export type Database = {
           move_in_date: string | null
           built_year: number | null
           view_count: number
+          owner_phone: string | null
+          door_password: string | null
+          owner_desired_price: number | null
           created_at: string
           updated_at: string
         }
@@ -101,6 +104,9 @@ export type Database = {
           move_in_date?: string | null
           built_year?: number | null
           view_count?: number
+          owner_phone?: string | null
+          door_password?: string | null
+          owner_desired_price?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -132,6 +138,9 @@ export type Database = {
           move_in_date?: string | null
           built_year?: number | null
           view_count?: number
+          owner_phone?: string | null
+          door_password?: string | null
+          owner_desired_price?: number | null
           created_at?: string
           updated_at?: string
         }

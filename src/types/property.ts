@@ -51,5 +51,8 @@ export interface PropertyFormData {
   features: string[]
   move_in_date: string | null
   built_year: number | null
+  owner_phone: string | null
+  door_password: string | null
+  owner_desired_price: number | null
   images: File[]
 }
