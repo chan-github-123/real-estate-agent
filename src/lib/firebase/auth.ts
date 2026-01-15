@@ -27,7 +27,11 @@ export async function signOut() {
 }
 
 export function onAuthChange(callback: (user: User | null) => void) {
-  if (!auth) return () => {}
+  if (!auth) {
+    // Auth가 초기화되지 않았을 때도 콜백 호출
+    setTimeout(() => callback(null), 0)
+    return () => {}
+  }
   return onAuthStateChanged(auth, callback)
 }
 
