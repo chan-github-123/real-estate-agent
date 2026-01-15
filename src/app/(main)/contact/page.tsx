@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { Phone, Mail, MapPin, Clock } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { InquiryForm } from '@/components/inquiry/InquiryForm'
