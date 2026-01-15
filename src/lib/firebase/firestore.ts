@@ -22,6 +22,7 @@ import type { Inquiry } from '@/types/inquiry'
 // ============ Properties ============
 
 export async function getProperties(filters?: PropertyFilters): Promise<PropertyWithImages[]> {
+  if (!db) return []
   try {
     const constraints: QueryConstraint[] = [
       orderBy('createdAt', 'desc')
@@ -68,6 +69,7 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
 }
 
 export async function getProperty(id: string): Promise<PropertyWithImages | null> {
+  if (!db) return null
   try {
     const docRef = doc(db, 'properties', id)
     const docSnap = await getDoc(docRef)
@@ -99,6 +101,7 @@ export async function getProperty(id: string): Promise<PropertyWithImages | null
 }
 
 export async function createProperty(data: Omit<DocumentData, 'id' | 'createdAt' | 'updatedAt'>) {
+  if (!db) return { id: null, error: 'Database not initialized' }
   try {
     const docRef = await addDoc(collection(db, 'properties'), {
       ...data,
@@ -113,6 +116,7 @@ export async function createProperty(data: Omit<DocumentData, 'id' | 'createdAt'
 }
 
 export async function updateProperty(id: string, data: Partial<DocumentData>) {
+  if (!db) return { error: 'Database not initialized' }
   try {
     const docRef = doc(db, 'properties', id)
     await updateDoc(docRef, {
@@ -126,6 +130,7 @@ export async function updateProperty(id: string, data: Partial<DocumentData>) {
 }
 
 export async function deleteProperty(id: string) {
+  if (!db) return { error: 'Database not initialized' }
   try {
     await deleteDoc(doc(db, 'properties', id))
     return { error: null }
@@ -137,6 +142,7 @@ export async function deleteProperty(id: string) {
 // ============ Property Images ============
 
 export async function addPropertyImage(propertyId: string, imageData: DocumentData) {
+  if (!db) return { id: null, error: 'Database not initialized' }
   try {
     const docRef = await addDoc(collection(db, 'properties', propertyId, 'images'), {
       ...imageData,
@@ -151,6 +157,7 @@ export async function addPropertyImage(propertyId: string, imageData: DocumentDa
 // ============ Inquiries ============
 
 export async function getInquiries(): Promise<Inquiry[]> {
+  if (!db) return []
   try {
     const q = query(collection(db, 'inquiries'), orderBy('createdAt', 'desc'))
     const snapshot = await getDocs(q)
@@ -166,6 +173,7 @@ export async function getInquiries(): Promise<Inquiry[]> {
 }
 
 export async function createInquiry(data: Omit<DocumentData, 'id' | 'createdAt'>) {
+  if (!db) return { id: null, error: 'Database not initialized' }
   try {
     const docRef = await addDoc(collection(db, 'inquiries'), {
       ...data,
@@ -182,6 +190,7 @@ export async function createInquiry(data: Omit<DocumentData, 'id' | 'createdAt'>
 // ============ Consultations ============
 
 export async function getConsultations() {
+  if (!db) return []
   try {
     const q = query(collection(db, 'consultations'), orderBy('preferredDate', 'asc'))
     const snapshot = await getDocs(q)
@@ -197,6 +206,7 @@ export async function getConsultations() {
 }
 
 export async function createConsultation(data: Omit<DocumentData, 'id' | 'createdAt'>) {
+  if (!db) return { id: null, error: 'Database not initialized' }
   try {
     const docRef = await addDoc(collection(db, 'consultations'), {
       ...data,
@@ -213,6 +223,7 @@ export async function createConsultation(data: Omit<DocumentData, 'id' | 'create
 // ============ Stats ============
 
 export async function getStats() {
+  if (!db) return { totalProperties: 0, availableProperties: 0, pendingInquiries: 0, pendingConsultations: 0 }
   try {
     const [propertiesSnap, inquiriesSnap, consultationsSnap] = await Promise.all([
       getDocs(collection(db, 'properties')),
