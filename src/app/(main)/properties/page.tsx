@@ -26,7 +26,23 @@ function PropertyListSkeleton() {
   )
 }
 
-function PropertiesContent() {
+function PageSkeleton() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <Skeleton className="h-10 w-48 mb-8" />
+      <div className="flex flex-col lg:flex-row gap-8">
+        <aside className="w-full lg:w-72 flex-shrink-0">
+          <Skeleton className="h-96 rounded-lg" />
+        </aside>
+        <main className="flex-1">
+          <PropertyListSkeleton />
+        </main>
+      </div>
+    </div>
+  )
+}
+
+function PropertiesPageContent() {
   const searchParams = useSearchParams()
   const [properties, setProperties] = useState<PropertyWithImages[]>([])
   const [loading, setLoading] = useState(true)
@@ -52,44 +68,6 @@ function PropertiesContent() {
     fetchProperties()
   }, [searchParams])
 
-  if (loading) {
-    return <PropertyListSkeleton />
-  }
-
-  if (properties.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-500 mb-4">검색 결과가 없습니다.</p>
-        <p className="text-sm text-gray-400">
-          다른 조건으로 검색해보세요.
-        </p>
-      </div>
-    )
-  }
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {properties.map((property) => (
-        <PropertyCard key={property.id} property={property} />
-      ))}
-    </div>
-  )
-}
-
-export default function PropertiesPage() {
-  const searchParams = useSearchParams()
-
-  const filters: PropertyFilters = {
-    property_type: searchParams.get('property_type') as PropertyFilters['property_type'] || undefined,
-    transaction_type: searchParams.get('transaction_type') as PropertyFilters['transaction_type'] || undefined,
-    city: searchParams.get('city') || undefined,
-    district: searchParams.get('district') || undefined,
-    min_price: searchParams.get('min_price') ? Number(searchParams.get('min_price')) : undefined,
-    max_price: searchParams.get('max_price') ? Number(searchParams.get('max_price')) : undefined,
-    rooms: searchParams.get('rooms') ? Number(searchParams.get('rooms')) : undefined,
-    search: searchParams.get('search') || undefined,
-  }
-
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">매물 검색</h1>
@@ -104,11 +82,32 @@ export default function PropertiesPage() {
 
         {/* Property Grid */}
         <main className="flex-1">
-          <Suspense fallback={<PropertyListSkeleton />}>
-            <PropertiesContent />
-          </Suspense>
+          {loading ? (
+            <PropertyListSkeleton />
+          ) : properties.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 mb-4">검색 결과가 없습니다.</p>
+              <p className="text-sm text-gray-400">
+                다른 조건으로 검색해보세요.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {properties.map((property) => (
+                <PropertyCard key={property.id} property={property} />
+              ))}
+            </div>
+          )}
         </main>
       </div>
     </div>
+  )
+}
+
+export default function PropertiesPage() {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <PropertiesPageContent />
+    </Suspense>
   )
 }
