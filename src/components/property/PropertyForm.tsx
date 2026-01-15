@@ -83,7 +83,7 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
       floor: initialData?.floor?.toString() || '',
       total_floors: initialData?.total_floors?.toString() || '',
       address: initialData?.address || '',
-      city: initialData?.city || '',
+      city: initialData?.city || '대구',
       district: initialData?.district || '',
       dong: initialData?.dong || '',
       description: initialData?.description || '',
