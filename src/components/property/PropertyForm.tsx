@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Loader2, Upload, X, ImageIcon } from 'lucide-react'
+import { Loader2, Upload, X, ImageIcon, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -60,6 +60,7 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
   const [existingImages, setExistingImages] = useState<PropertyImage[]>(
     initialData?.property_images || []
   )
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false)
 
   const {
     register,
@@ -117,6 +118,41 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
     const newDistrict = e.target.value
     setValue('district', newDistrict)
     setValue('dong', '')
+  }
+
+  // AI 설명 생성
+  const generateAIDescription = async () => {
+    setIsGeneratingAI(true)
+    try {
+      const formData = watch()
+      const response = await fetch('/api/ai/generate-description', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          propertyType: PROPERTY_TYPES[formData.property_type as keyof typeof PROPERTY_TYPES] || formData.property_type,
+          transactionType: TRANSACTION_TYPES[formData.transaction_type as keyof typeof TRANSACTION_TYPES] || formData.transaction_type,
+          area: formData.area_m2,
+          rooms: formData.rooms,
+          bathrooms: formData.bathrooms,
+          floor: formData.floor,
+          features: selectedFeatures,
+          address: formData.address,
+          city: formData.city,
+          district: formData.district,
+        }),
+      })
+      const data = await response.json()
+      if (data.description) {
+        setValue('description', data.description)
+      } else if (data.error) {
+        alert('AI 설명 생성에 실패했습니다: ' + data.error)
+      }
+    } catch (err) {
+      console.error('AI generation error:', err)
+      alert('AI 설명 생성 중 오류가 발생했습니다.')
+    } finally {
+      setIsGeneratingAI(false)
+    }
   }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -541,8 +577,28 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
 
       {/* Description */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>상세 설명</CardTitle>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={generateAIDescription}
+            disabled={isGeneratingAI}
+            className="gap-2"
+          >
+            {isGeneratingAI ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                생성 중...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4" />
+                AI로 작성
+              </>
+            )}
+          </Button>
         </CardHeader>
         <CardContent>
           <Textarea
