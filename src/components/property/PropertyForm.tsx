@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createProperty, updateProperty, addPropertyImage } from '@/lib/firebase/firestore'
 import { uploadImage, generateImagePath } from '@/lib/firebase/storage'
-import { PROPERTY_TYPES, TRANSACTION_TYPES, PROPERTY_STATUS, CITIES, PROPERTY_FEATURES } from '@/lib/constants'
+import { PROPERTY_TYPES, TRANSACTION_TYPES, PROPERTY_STATUS, CITIES, PROPERTY_FEATURES, DAEGU_DISTRICTS, DAEGU_DONGS } from '@/lib/constants'
 import type { Property, PropertyImage } from '@/types/property'
 
 const propertySchema = z.object({
@@ -65,6 +65,7 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<PropertyFormData>({
     resolver: zodResolver(propertySchema),
@@ -83,7 +84,7 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
       floor: initialData?.floor?.toString() || '',
       total_floors: initialData?.total_floors?.toString() || '',
       address: initialData?.address || '',
-      city: initialData?.city || '대구',
+      city: initialData?.city || '대구광역시',
       district: initialData?.district || '',
       dong: initialData?.dong || '',
       description: initialData?.description || '',
@@ -96,6 +97,27 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
   })
 
   const transactionType = watch('transaction_type')
+  const selectedCity = watch('city')
+  const selectedDistrict = watch('district')
+
+  // 대구시 선택 시 구/군 목록
+  const isDaegu = selectedCity === '대구광역시'
+  const availableDongs = isDaegu && selectedDistrict ? DAEGU_DONGS[selectedDistrict] || [] : []
+
+  // 시/도 변경 시 구/군, 동 초기화
+  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newCity = e.target.value
+    setValue('city', newCity)
+    setValue('district', '')
+    setValue('dong', '')
+  }
+
+  // 구/군 변경 시 동 초기화
+  const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
+    const newDistrict = e.target.value
+    setValue('district', newDistrict)
+    setValue('dong', '')
+  }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -413,7 +435,8 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
               <Label htmlFor="city">시/도 *</Label>
               <select
                 id="city"
-                {...register('city')}
+                value={selectedCity}
+                onChange={handleCityChange}
                 className="mt-1 w-full h-10 px-3 rounded-md border border-input bg-background"
               >
                 <option value="">선택</option>
@@ -427,24 +450,51 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
             </div>
             <div>
               <Label htmlFor="district">구/군 *</Label>
-              <Input
-                id="district"
-                {...register('district')}
-                className="mt-1"
-                placeholder="예: 강남구"
-              />
+              {isDaegu ? (
+                <select
+                  id="district"
+                  value={selectedDistrict}
+                  onChange={handleDistrictChange}
+                  className="mt-1 w-full h-10 px-3 rounded-md border border-input bg-background"
+                >
+                  <option value="">선택</option>
+                  {DAEGU_DISTRICTS.map((district) => (
+                    <option key={district} value={district}>{district}</option>
+                  ))}
+                </select>
+              ) : (
+                <Input
+                  id="district"
+                  {...register('district')}
+                  className="mt-1"
+                  placeholder="예: 강남구"
+                />
+              )}
               {errors.district && (
                 <p className="text-sm text-red-500 mt-1">{errors.district.message}</p>
               )}
             </div>
             <div>
               <Label htmlFor="dong">동/읍/면</Label>
-              <Input
-                id="dong"
-                {...register('dong')}
-                className="mt-1"
-                placeholder="예: 역삼동"
-              />
+              {isDaegu && availableDongs.length > 0 ? (
+                <select
+                  id="dong"
+                  {...register('dong')}
+                  className="mt-1 w-full h-10 px-3 rounded-md border border-input bg-background"
+                >
+                  <option value="">선택</option>
+                  {availableDongs.map((dong) => (
+                    <option key={dong} value={dong}>{dong}</option>
+                  ))}
+                </select>
+              ) : (
+                <Input
+                  id="dong"
+                  {...register('dong')}
+                  className="mt-1"
+                  placeholder="예: 역삼동"
+                />
+              )}
             </div>
           </div>
 
