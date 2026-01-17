@@ -24,27 +24,11 @@ import type { Inquiry } from '@/types/inquiry'
 export async function getProperties(filters?: PropertyFilters): Promise<PropertyWithImages[]> {
   if (!db) return []
   try {
-    const constraints: QueryConstraint[] = [
-      orderBy('createdAt', 'desc')
-    ]
-
-    if (filters?.status) {
-      constraints.unshift(where('status', '==', filters.status))
-    }
-    if (filters?.property_type) {
-      constraints.unshift(where('property_type', '==', filters.property_type))
-    }
-    if (filters?.transaction_type) {
-      constraints.unshift(where('transaction_type', '==', filters.transaction_type))
-    }
-    if (filters?.city) {
-      constraints.unshift(where('city', '==', filters.city))
-    }
-
-    const q = query(collection(db, 'properties'), ...constraints, limit(50))
+    // Firestore 복합 인덱스 문제를 피하기 위해 기본 쿼리만 사용하고 클라이언트에서 필터링
+    const q = query(collection(db, 'properties'), limit(100))
     const snapshot = await getDocs(q)
 
-    const properties: PropertyWithImages[] = []
+    let properties: PropertyWithImages[] = []
 
     for (const docSnap of snapshot.docs) {
       const data = docSnap.data()
@@ -61,7 +45,49 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
       } as PropertyWithImages)
     }
 
-    return properties
+    // 클라이언트 사이드 필터링
+    if (filters?.status) {
+      properties = properties.filter(p => p.status === filters.status)
+    }
+    if (filters?.property_type) {
+      properties = properties.filter(p => p.property_type === filters.property_type)
+    }
+    if (filters?.transaction_type) {
+      properties = properties.filter(p => p.transaction_type === filters.transaction_type)
+    }
+    if (filters?.city) {
+      properties = properties.filter(p => p.city === filters.city)
+    }
+    if (filters?.district) {
+      properties = properties.filter(p => p.district === filters.district)
+    }
+    if (filters?.min_price) {
+      properties = properties.filter(p => (p.price || 0) >= filters.min_price!)
+    }
+    if (filters?.max_price) {
+      properties = properties.filter(p => (p.price || 0) <= filters.max_price!)
+    }
+    if (filters?.rooms) {
+      properties = properties.filter(p => (p.rooms || 0) >= filters.rooms!)
+    }
+    if (filters?.search) {
+      const searchLower = filters.search.toLowerCase()
+      properties = properties.filter(p =>
+        p.title.toLowerCase().includes(searchLower) ||
+        p.address?.toLowerCase().includes(searchLower) ||
+        p.city.toLowerCase().includes(searchLower) ||
+        p.district.toLowerCase().includes(searchLower)
+      )
+    }
+
+    // 최신순 정렬
+    properties.sort((a, b) => {
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0
+      return dateB - dateA
+    })
+
+    return properties.slice(0, 50)
   } catch (error) {
     console.error('Error fetching properties:', error)
     return []
@@ -86,7 +112,7 @@ export async function getProperty(id: string): Promise<PropertyWithImages | null
 
     // Increment view count
     await updateDoc(docRef, {
-      viewCount: increment(1)
+      view_count: increment(1)
     })
 
     return {
@@ -100,14 +126,14 @@ export async function getProperty(id: string): Promise<PropertyWithImages | null
   }
 }
 
-export async function createProperty(data: Omit<DocumentData, 'id' | 'createdAt' | 'updatedAt'>) {
+export async function createProperty(data: Omit<DocumentData, 'id' | 'created_at' | 'updated_at'>) {
   if (!db) return { id: null, error: 'Database not initialized' }
   try {
     const docRef = await addDoc(collection(db, 'properties'), {
       ...data,
-      viewCount: 0,
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now()
+      view_count: 0,
+      created_at: Timestamp.now(),
+      updated_at: Timestamp.now()
     })
     return { id: docRef.id, error: null }
   } catch (error: any) {
@@ -121,7 +147,7 @@ export async function updateProperty(id: string, data: Partial<DocumentData>) {
     const docRef = doc(db, 'properties', id)
     await updateDoc(docRef, {
       ...data,
-      updatedAt: Timestamp.now()
+      updated_at: Timestamp.now()
     })
     return { error: null }
   } catch (error: any) {
@@ -148,7 +174,7 @@ export async function updatePropertyStatus(
     const propertyRef = doc(db, 'properties', propertyId)
     await updateDoc(propertyRef, {
       status,
-      updatedAt: Timestamp.now()
+      updated_at: Timestamp.now()
     })
     return { error: null }
   } catch (error: any) {
@@ -163,7 +189,7 @@ export async function addPropertyImage(propertyId: string, imageData: DocumentDa
   try {
     const docRef = await addDoc(collection(db, 'properties', propertyId, 'images'), {
       ...imageData,
-      createdAt: Timestamp.now()
+      created_at: Timestamp.now()
     })
     return { id: docRef.id, error: null }
   } catch (error: any) {
@@ -176,7 +202,7 @@ export async function addPropertyImage(propertyId: string, imageData: DocumentDa
 export async function getInquiries(): Promise<Inquiry[]> {
   if (!db) return []
   try {
-    const q = query(collection(db, 'inquiries'), orderBy('createdAt', 'desc'))
+    const q = query(collection(db, 'inquiries'), orderBy('created_at', 'desc'))
     const snapshot = await getDocs(q)
 
     return snapshot.docs.map(doc => ({
@@ -189,14 +215,14 @@ export async function getInquiries(): Promise<Inquiry[]> {
   }
 }
 
-export async function createInquiry(data: Omit<DocumentData, 'id' | 'createdAt'>) {
+export async function createInquiry(data: Omit<DocumentData, 'id' | 'created_at'>) {
   if (!db) return { id: null, error: 'Database not initialized' }
   try {
     const docRef = await addDoc(collection(db, 'inquiries'), {
       ...data,
       status: 'pending',
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now()
+      created_at: Timestamp.now(),
+      updated_at: Timestamp.now()
     })
     return { id: docRef.id, error: null }
   } catch (error: any) {
@@ -209,7 +235,7 @@ export async function createInquiry(data: Omit<DocumentData, 'id' | 'createdAt'>
 export async function getConsultations() {
   if (!db) return []
   try {
-    const q = query(collection(db, 'consultations'), orderBy('preferredDate', 'asc'))
+    const q = query(collection(db, 'consultations'), orderBy('preferred_date', 'asc'))
     const snapshot = await getDocs(q)
 
     return snapshot.docs.map(doc => ({
@@ -222,14 +248,14 @@ export async function getConsultations() {
   }
 }
 
-export async function createConsultation(data: Omit<DocumentData, 'id' | 'createdAt'>) {
+export async function createConsultation(data: Omit<DocumentData, 'id' | 'created_at'>) {
   if (!db) return { id: null, error: 'Database not initialized' }
   try {
     const docRef = await addDoc(collection(db, 'consultations'), {
       ...data,
       status: 'pending',
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now()
+      created_at: Timestamp.now(),
+      updated_at: Timestamp.now()
     })
     return { id: docRef.id, error: null }
   } catch (error: any) {
