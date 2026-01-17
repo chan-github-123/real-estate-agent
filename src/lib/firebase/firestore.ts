@@ -32,10 +32,10 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
       constraints.unshift(where('status', '==', filters.status))
     }
     if (filters?.property_type) {
-      constraints.unshift(where('propertyType', '==', filters.property_type))
+      constraints.unshift(where('property_type', '==', filters.property_type))
     }
     if (filters?.transaction_type) {
-      constraints.unshift(where('transactionType', '==', filters.transaction_type))
+      constraints.unshift(where('transaction_type', '==', filters.transaction_type))
     }
     if (filters?.city) {
       constraints.unshift(where('city', '==', filters.city))
@@ -133,6 +133,23 @@ export async function deleteProperty(id: string) {
   if (!db) return { error: 'Database not initialized' }
   try {
     await deleteDoc(doc(db, 'properties', id))
+    return { error: null }
+  } catch (error: any) {
+    return { error: error.message }
+  }
+}
+
+export async function updatePropertyStatus(
+  propertyId: string,
+  status: string
+): Promise<{ error: string | null }> {
+  if (!db) return { error: 'Database not initialized' }
+  try {
+    const propertyRef = doc(db, 'properties', propertyId)
+    await updateDoc(propertyRef, {
+      status,
+      updatedAt: Timestamp.now()
+    })
     return { error: null }
   } catch (error: any) {
     return { error: error.message }

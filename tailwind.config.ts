@@ -43,11 +43,57 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        success: {
+          DEFAULT: 'hsl(var(--success))',
+          foreground: 'hsl(var(--success-foreground))',
+        },
+        warning: {
+          DEFAULT: 'hsl(var(--warning))',
+          foreground: 'hsl(var(--warning-foreground))',
+        },
+        info: {
+          DEFAULT: 'hsl(var(--info))',
+          foreground: 'hsl(var(--info-foreground))',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+      },
+      fontSize: {
+        'display': ['3rem', { lineHeight: '1.1', fontWeight: '700' }],
+        'heading-1': ['2.25rem', { lineHeight: '1.2', fontWeight: '700' }],
+        'heading-2': ['1.875rem', { lineHeight: '1.25', fontWeight: '600' }],
+        'heading-3': ['1.5rem', { lineHeight: '1.3', fontWeight: '600' }],
+        'body-lg': ['1.125rem', { lineHeight: '1.6' }],
+        'body': ['1rem', { lineHeight: '1.6' }],
+        'body-sm': ['0.875rem', { lineHeight: '1.5' }],
+        'caption': ['0.75rem', { lineHeight: '1.4' }],
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.3s ease-out',
+        'slide-up': 'slideUp 0.3s ease-out',
+        'slide-down': 'slideDown 0.3s ease-out',
+        'slide-in-right': 'slideInRight 0.3s ease-out',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        slideDown: {
+          '0%': { transform: 'translateY(-10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        slideInRight: {
+          '0%': { transform: 'translateX(100%)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
       },
     },
   },

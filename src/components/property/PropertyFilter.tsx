@@ -11,9 +11,10 @@ import type { PropertyFilters } from '@/types/property'
 
 interface PropertyFilterProps {
   filters: PropertyFilters
+  onFilterApply?: () => void
 }
 
-export function PropertyFilter({ filters }: PropertyFilterProps) {
+export function PropertyFilter({ filters, onFilterApply }: PropertyFilterProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -30,6 +31,7 @@ export function PropertyFilter({ filters }: PropertyFilterProps) {
     params.delete('page')
 
     router.push(`/properties?${params.toString()}`)
+    onFilterApply?.()
   }
 
   const clearFilters = () => {

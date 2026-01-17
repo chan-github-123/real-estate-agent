@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { MapPin, Maximize, BedDouble, Bath } from 'lucide-react'
+import { MapPin, Maximize, BedDouble, Bath, Camera } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice, formatMonthlyRent, formatArea } from '@/lib/utils'
@@ -25,16 +25,16 @@ export function PropertyCard({ property, showStatus = false }: PropertyCardProps
     return formatPrice(property.price)
   }
 
-  const getStatusColor = () => {
+  const getStatusVariant = (): 'success' | 'warning' | 'muted' => {
     switch (property.status) {
       case 'available':
-        return 'bg-green-500'
+        return 'success'
       case 'reserved':
-        return 'bg-yellow-500'
+        return 'warning'
       case 'completed':
-        return 'bg-gray-500'
+        return 'muted'
       default:
-        return 'bg-gray-500'
+        return 'muted'
     }
   }
 
@@ -56,9 +56,19 @@ export function PropertyCard({ property, showStatus = false }: PropertyCardProps
           </Badge>
           {/* Status Badge */}
           {showStatus && (
-            <Badge className={`absolute top-3 right-3 ${getStatusColor()}`}>
+            <Badge
+              variant={getStatusVariant()}
+              className="absolute top-3 right-3"
+            >
               {PROPERTY_STATUS[property.status]}
             </Badge>
+          )}
+          {/* Image Count Badge */}
+          {property.property_images && property.property_images.length > 1 && (
+            <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-md flex items-center gap-1">
+              <Camera className="h-3 w-3" />
+              <span>{property.property_images.length}</span>
+            </div>
           )}
         </div>
 

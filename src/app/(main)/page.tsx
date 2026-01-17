@@ -1,9 +1,11 @@
 export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
-import { Building2, Search, Phone, CheckCircle, ArrowRight } from 'lucide-react'
+import { Building2, Search, Phone, CheckCircle, ArrowRight, Star, Users, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { PropertyCard } from '@/components/property/PropertyCard'
+import { getProperties } from '@/lib/firebase/firestore'
 
 const features = [
   {
@@ -30,7 +32,17 @@ const propertyTypes = [
   { name: '상가', href: '/properties?property_type=commercial', count: '40+' },
 ]
 
-export default function HomePage() {
+const stats = [
+  { label: '누적 거래 건수', value: '1,200+', icon: TrendingUp },
+  { label: '등록 매물', value: '350+', icon: Building2 },
+  { label: '고객 만족도', value: '98%', icon: Star },
+  { label: '협력 중개사', value: '50+', icon: Users },
+]
+
+export default async function HomePage() {
+  const properties = await getProperties({ status: 'available' })
+  const latestProperties = properties.slice(0, 6)
+
   return (
     <>
       {/* Hero Section */}
@@ -63,6 +75,23 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Stats Section */}
+      <section className="py-12 bg-white border-b">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {stats.map((stat) => (
+              <div key={stat.label} className="text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-3">
+                  <stat.icon className="h-6 w-6 text-primary" />
+                </div>
+                <p className="text-2xl md:text-3xl font-bold text-gray-900">{stat.value}</p>
+                <p className="text-sm text-muted-foreground">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Property Types */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
@@ -83,8 +112,39 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features */}
+      {/* Latest Properties */}
       <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-2xl font-bold">최신 매물</h2>
+              <p className="text-muted-foreground mt-1">방금 등록된 새로운 매물을 확인하세요</p>
+            </div>
+            <Link href="/properties">
+              <Button variant="outline">
+                전체 보기
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+
+          {latestProperties.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {latestProperties.map((property) => (
+                <PropertyCard key={property.id} property={property} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 bg-white rounded-lg border">
+              <Building2 className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500">현재 등록된 매물이 없습니다.</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl font-bold text-center mb-10">왜 저희를 선택해야 할까요?</h2>
           <div className="grid md:grid-cols-3 gap-8">
