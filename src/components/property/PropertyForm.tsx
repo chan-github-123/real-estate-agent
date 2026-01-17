@@ -75,10 +75,10 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
       property_type: initialData?.property_type || '',
       transaction_type: initialData?.transaction_type || '',
       status: initialData?.status || 'available',
-      price: initialData?.price?.toString() || '',
-      deposit: initialData?.deposit?.toString() || '',
-      monthly_rent: initialData?.monthly_rent?.toString() || '',
-      maintenance_fee: initialData?.maintenance_fee?.toString() || '',
+      price: initialData?.price ? Math.round(initialData.price / 10000).toString() : '',
+      deposit: initialData?.deposit ? Math.round(initialData.deposit / 10000).toString() : '',
+      monthly_rent: initialData?.monthly_rent ? Math.round(initialData.monthly_rent / 10000).toString() : '',
+      maintenance_fee: initialData?.maintenance_fee ? Math.round(initialData.maintenance_fee / 10000).toString() : '',
       area_m2: initialData?.area_m2?.toString() || '',
       rooms: initialData?.rooms?.toString() || '',
       bathrooms: initialData?.bathrooms?.toString() || '',
@@ -93,13 +93,35 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
       move_in_date: initialData?.move_in_date || '',
       owner_phone: initialData?.owner_phone || '',
       door_password: initialData?.door_password || '',
-      owner_desired_price: initialData?.owner_desired_price?.toString() || '',
+      owner_desired_price: initialData?.owner_desired_price ? Math.round(initialData.owner_desired_price / 10000).toString() : '',
     },
   })
 
   const transactionType = watch('transaction_type')
   const selectedCity = watch('city')
   const selectedDistrict = watch('district')
+  const watchPrice = watch('price')
+  const watchDeposit = watch('deposit')
+  const watchMonthlyRent = watch('monthly_rent')
+  const watchMaintenanceFee = watch('maintenance_fee')
+  const watchOwnerDesiredPrice = watch('owner_desired_price')
+
+  // 만원 단위를 한글 형식으로 변환 (예: 50000 -> "5억원", 25000 -> "2억 5000만원")
+  const formatPriceKorean = (value: string | undefined): string => {
+    if (!value || isNaN(Number(value))) return ''
+    const num = Number(value)
+    if (num === 0) return '0원'
+
+    const eok = Math.floor(num / 10000) // 억
+    const cheon = num % 10000 // 만원 단위
+
+    let result = ''
+    if (eok > 0) result += `${eok}억`
+    if (cheon > 0) result += ` ${cheon.toLocaleString()}만`
+    result += '원'
+
+    return result.trim()
+  }
 
   // 대구시 선택 시 구/군 목록
   const isDaegu = selectedCity === '대구광역시'
@@ -187,10 +209,10 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
         property_type: data.property_type,
         transaction_type: data.transaction_type,
         status: data.status,
-        price: data.price ? Number(data.price) : null,
-        deposit: data.deposit ? Number(data.deposit) : null,
-        monthly_rent: data.monthly_rent ? Number(data.monthly_rent) : null,
-        maintenance_fee: data.maintenance_fee ? Number(data.maintenance_fee) : null,
+        price: data.price ? Number(data.price) * 10000 : null,
+        deposit: data.deposit ? Number(data.deposit) * 10000 : null,
+        monthly_rent: data.monthly_rent ? Number(data.monthly_rent) * 10000 : null,
+        maintenance_fee: data.maintenance_fee ? Number(data.maintenance_fee) * 10000 : null,
         area_m2: Number(data.area_m2),
         rooms: data.rooms ? Number(data.rooms) : null,
         bathrooms: data.bathrooms ? Number(data.bathrooms) : null,
@@ -206,7 +228,7 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
         features: selectedFeatures,
         owner_phone: data.owner_phone || null,
         door_password: data.door_password || null,
-        owner_desired_price: data.owner_desired_price ? Number(data.owner_desired_price) : null,
+        owner_desired_price: data.owner_desired_price ? Number(data.owner_desired_price) * 10000 : null,
       }
 
       let propertyId = initialData?.id
@@ -327,52 +349,64 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
             {transactionType !== 'monthly' && (
               <div>
                 <Label htmlFor="price">
-                  {transactionType === 'sale' ? '매매가' : '전세금'} (원)
+                  {transactionType === 'sale' ? '매매가' : '전세금'} (만원)
                 </Label>
                 <Input
                   id="price"
                   type="number"
                   {...register('price')}
                   className="mt-1"
-                  placeholder="예: 500000000"
+                  placeholder="예: 50000 (5억원)"
                 />
+                {watchPrice && (
+                  <p className="text-sm text-primary mt-1 font-medium">{formatPriceKorean(watchPrice)}</p>
+                )}
               </div>
             )}
 
             {transactionType === 'monthly' && (
               <>
                 <div>
-                  <Label htmlFor="deposit">보증금 (원)</Label>
+                  <Label htmlFor="deposit">보증금 (만원)</Label>
                   <Input
                     id="deposit"
                     type="number"
                     {...register('deposit')}
                     className="mt-1"
-                    placeholder="예: 50000000"
+                    placeholder="예: 5000 (5천만원)"
                   />
+                  {watchDeposit && (
+                    <p className="text-sm text-primary mt-1 font-medium">{formatPriceKorean(watchDeposit)}</p>
+                  )}
                 </div>
                 <div>
-                  <Label htmlFor="monthly_rent">월세 (원)</Label>
+                  <Label htmlFor="monthly_rent">월세 (만원)</Label>
                   <Input
                     id="monthly_rent"
                     type="number"
                     {...register('monthly_rent')}
                     className="mt-1"
-                    placeholder="예: 1000000"
+                    placeholder="예: 100 (100만원)"
                   />
+                  {watchMonthlyRent && (
+                    <p className="text-sm text-primary mt-1 font-medium">{formatPriceKorean(watchMonthlyRent)}</p>
+                  )}
                 </div>
               </>
             )}
 
             <div>
-              <Label htmlFor="maintenance_fee">관리비 (원)</Label>
+              <Label htmlFor="maintenance_fee">관리비 (만원)</Label>
               <Input
                 id="maintenance_fee"
                 type="number"
                 {...register('maintenance_fee')}
                 className="mt-1"
-                placeholder="예: 100000"
+                placeholder="예: 10 (10만원)"
               />
+              {watchMaintenanceFee && (
+                <p className="text-sm text-primary mt-1 font-medium">{formatPriceKorean(watchMaintenanceFee)}</p>
+              )}
             </div>
           </div>
         </CardContent>
@@ -640,14 +674,17 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
               />
             </div>
             <div>
-              <Label htmlFor="owner_desired_price">집주인 희망가 (원)</Label>
+              <Label htmlFor="owner_desired_price">집주인 희망가 (만원)</Label>
               <Input
                 id="owner_desired_price"
                 type="number"
                 {...register('owner_desired_price')}
                 className="mt-1"
-                placeholder="예: 500000000"
+                placeholder="예: 50000 (5억원)"
               />
+              {watchOwnerDesiredPrice && (
+                <p className="text-sm text-primary mt-1 font-medium">{formatPriceKorean(watchOwnerDesiredPrice)}</p>
+              )}
             </div>
           </div>
         </CardContent>
