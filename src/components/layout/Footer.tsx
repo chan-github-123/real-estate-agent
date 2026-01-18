@@ -1,9 +1,14 @@
 import Link from 'next/link'
 import { Building2, Phone, Mail, MapPin, Clock } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
-export function Footer() {
+interface FooterProps {
+  className?: string
+}
+
+export function Footer({ className }: FooterProps) {
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer className={cn("bg-gray-900 text-gray-300", className)}>
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Company Info */}

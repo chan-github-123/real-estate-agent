@@ -4,14 +4,14 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Plus, Pencil, Eye, Loader2, ChevronLeft, ChevronRight, Search, Phone, Key, Banknote } from 'lucide-react'
+import { Plus, Pencil, Eye, Loader2, ChevronLeft, ChevronRight, Search, Phone, Key, Banknote, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice, formatArea, formatDate } from '@/lib/utils'
 import { PROPERTY_TYPES, TRANSACTION_TYPES, PROPERTY_STATUS } from '@/lib/constants'
-import { getProperties, updatePropertyStatus } from '@/lib/firebase/firestore'
+import { getProperties, updatePropertyStatus, deleteProperty } from '@/lib/firebase/firestore'
 import type { PropertyWithImages, PropertyStatus } from '@/types/property'
 
 const ITEMS_PER_PAGE = 10
@@ -31,6 +31,8 @@ export default function AdminPropertiesPage() {
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [typeFilter, setTypeFilter] = useState<string>('')
   const [sortBy, setSortBy] = useState<string>('newest')
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     async function fetchProperties() {
@@ -88,6 +90,18 @@ export default function AdminPropertiesPage() {
     setProperties((prev) =>
       prev.map((p) => (p.id === propertyId ? { ...p, status: newStatus } : p))
     )
+  }
+
+  const handleDelete = async (propertyId: string) => {
+    setDeleting(true)
+    const { error } = await deleteProperty(propertyId)
+    if (!error) {
+      setProperties((prev) => prev.filter((p) => p.id !== propertyId))
+    } else {
+      alert('삭제 중 오류가 발생했습니다: ' + error)
+    }
+    setDeleting(false)
+    setDeleteConfirm(null)
   }
 
   if (loading) {
@@ -266,7 +280,7 @@ export default function AdminPropertiesPage() {
                           {formatDate(property.created_at)}
                         </td>
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
                             <Link href={`/properties/${property.id}`} target="_blank">
                               <Button variant="ghost" size="icon" title="보기">
                                 <Eye className="h-4 w-4" />
@@ -277,6 +291,36 @@ export default function AdminPropertiesPage() {
                                 <Pencil className="h-4 w-4" />
                               </Button>
                             </Link>
+                            {deleteConfirm === property.id ? (
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => handleDelete(property.id)}
+                                  disabled={deleting}
+                                >
+                                  {deleting ? '삭제중...' : '확인'}
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setDeleteConfirm(null)}
+                                  disabled={deleting}
+                                >
+                                  취소
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                title="삭제"
+                                onClick={() => setDeleteConfirm(property.id)}
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -344,6 +388,36 @@ export default function AdminPropertiesPage() {
                           수정
                         </Button>
                       </Link>
+                      {deleteConfirm === property.id ? (
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(property.id)}
+                            disabled={deleting}
+                          >
+                            {deleting ? '삭제중...' : '확인'}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setDeleteConfirm(null)}
+                            disabled={deleting}
+                          >
+                            취소
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteConfirm(property.id)}
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          삭제
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}

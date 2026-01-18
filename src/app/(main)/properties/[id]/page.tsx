@@ -76,18 +76,21 @@ export default function PropertyDetailPage() {
   const priceInfo = getPriceDisplay()
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-4 md:py-8">
       {/* Back Button */}
-      <Link href="/properties" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-6">
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        목록으로
+      <Link
+        href="/properties"
+        className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4 md:mb-6 py-2 touch-manipulation min-h-[44px]"
+      >
+        <ArrowLeft className="h-5 w-5 mr-2" />
+        <span className="text-sm md:text-base">목록으로</span>
       </Link>
 
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 md:space-y-6">
           {/* Image Gallery */}
-          <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
+          <div className="relative aspect-[4/3] md:aspect-video rounded-lg overflow-hidden bg-gray-100 -mx-4 md:mx-0 md:rounded-lg">
             {primaryImage ? (
               <Image
                 src={primaryImage.url}
@@ -105,9 +108,9 @@ export default function PropertyDetailPage() {
 
           {/* Thumbnail Images */}
           {images.length > 1 && (
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-4 gap-1.5 md:gap-2">
               {images.slice(0, 4).map((image, index) => (
-                <div key={image.id} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+                <div key={image.id} className="relative aspect-square rounded-md md:rounded-lg overflow-hidden bg-gray-100">
                   <Image
                     src={image.url}
                     alt={`${property.title} ${index + 1}`}
@@ -115,7 +118,7 @@ export default function PropertyDetailPage() {
                     className="object-cover"
                   />
                   {index === 3 && images.length > 4 && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-medium">
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-sm md:text-base font-medium">
                       +{images.length - 4}
                     </div>
                   )}
@@ -126,24 +129,24 @@ export default function PropertyDetailPage() {
 
           {/* Property Info */}
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Badge>{TRANSACTION_TYPES[property.transaction_type]}</Badge>
-              <Badge variant="outline">{PROPERTY_TYPES[property.property_type]}</Badge>
+            <div className="flex items-center gap-1.5 md:gap-2 mb-2 flex-wrap">
+              <Badge className="text-xs md:text-sm">{TRANSACTION_TYPES[property.transaction_type]}</Badge>
+              <Badge variant="outline" className="text-xs md:text-sm">{PROPERTY_TYPES[property.property_type]}</Badge>
               <PropertyStatusBadge status={property.status} />
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-bold mb-4">{property.title}</h1>
+            <h1 className="text-xl md:text-3xl font-bold mb-3 md:mb-4">{property.title}</h1>
 
-            <div className="flex items-center text-gray-600 mb-4">
-              <MapPin className="h-5 w-5 mr-2" />
+            <div className="flex items-start text-gray-600 mb-3 md:mb-4 text-sm md:text-base">
+              <MapPin className="h-4 w-4 md:h-5 md:w-5 mr-1.5 md:mr-2 flex-shrink-0 mt-0.5" />
               <span>{property.address}</span>
             </div>
 
-            <p className="text-3xl font-bold text-primary">
+            <p className="text-2xl md:text-3xl font-bold text-primary">
               {priceInfo.value}
             </p>
             {property.maintenance_fee && (
-              <p className="text-gray-500 mt-1">
+              <p className="text-sm md:text-base text-gray-500 mt-1">
                 관리비 월 {property.maintenance_fee.toLocaleString()}원
               </p>
             )}
@@ -254,10 +257,10 @@ export default function PropertyDetailPage() {
 
         {/* Sidebar - Inquiry Form */}
         <div className="lg:col-span-1">
-          <div className="sticky top-24">
+          <div className="lg:sticky lg:top-24">
             <Card>
-              <CardHeader>
-                <CardTitle>이 매물 문의하기</CardTitle>
+              <CardHeader className="pb-2 md:pb-4">
+                <CardTitle className="text-lg md:text-xl">이 매물 문의하기</CardTitle>
               </CardHeader>
               <CardContent>
                 <InquiryForm

@@ -73,3 +73,78 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 모바일 Safe Area */
+@layer utilities {
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  /* 터치 최적화 */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 스크롤 스냅 */
+  .snap-x-mandatory {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .snap-start {
+    scroll-snap-align: start;
+  }
+
+  /* 모바일에서 터치 타겟 최소 크기 보장 */
+  .min-touch-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Pull to Refresh 시 바운스 효과 */
+  .overscroll-bounce {
+    overscroll-behavior-y: contain;
+  }
+
+  /* 모바일 카드 그림자 */
+  .shadow-mobile {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  }
+
+  /* 활성 상태 피드백 */
+  .active-scale {
+    @apply transition-transform duration-75 active:scale-[0.98];
+  }
+}
+
+/* 모바일 입력 필드 확대 방지 */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="password"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* 스크롤바 숨기기 (모바일 가로 스크롤 영역) */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

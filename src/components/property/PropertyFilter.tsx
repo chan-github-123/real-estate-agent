@@ -41,16 +41,16 @@ export function PropertyFilter({ filters, onFilterApply }: PropertyFilterProps) 
   const hasFilters = Object.values(filters).some(v => v !== undefined && v !== '')
 
   return (
-    <div className="bg-white border rounded-lg p-4 space-y-4">
+    <div className="bg-white border rounded-lg p-4 space-y-5">
       {/* Search */}
       <div>
-        <Label htmlFor="search" className="mb-2 block">검색</Label>
+        <Label htmlFor="search" className="mb-2 block text-sm font-medium">검색</Label>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             id="search"
             placeholder="매물명, 주소 검색..."
-            className="pl-10"
+            className="pl-10 h-11 md:h-10"
             defaultValue={filters.search}
             onChange={(e) => {
               const value = e.target.value
@@ -66,11 +66,12 @@ export function PropertyFilter({ filters, onFilterApply }: PropertyFilterProps) 
 
       {/* Property Type */}
       <div>
-        <Label htmlFor="property_type" className="mb-2 block">매물 유형</Label>
+        <Label htmlFor="property_type" className="mb-2 block text-sm font-medium">매물 유형</Label>
         <Select
           id="property_type"
           value={filters.property_type || ''}
           onChange={(e) => updateFilter('property_type', e.target.value || undefined)}
+          className="h-11 md:h-10"
         >
           <option value="">전체</option>
           {Object.entries(PROPERTY_TYPES).map(([value, label]) => (
@@ -81,11 +82,12 @@ export function PropertyFilter({ filters, onFilterApply }: PropertyFilterProps) 
 
       {/* Transaction Type */}
       <div>
-        <Label htmlFor="transaction_type" className="mb-2 block">거래 유형</Label>
+        <Label htmlFor="transaction_type" className="mb-2 block text-sm font-medium">거래 유형</Label>
         <Select
           id="transaction_type"
           value={filters.transaction_type || ''}
           onChange={(e) => updateFilter('transaction_type', e.target.value || undefined)}
+          className="h-11 md:h-10"
         >
           <option value="">전체</option>
           {Object.entries(TRANSACTION_TYPES).map(([value, label]) => (
@@ -96,7 +98,7 @@ export function PropertyFilter({ filters, onFilterApply }: PropertyFilterProps) 
 
       {/* City */}
       <div>
-        <Label htmlFor="city" className="mb-2 block">시/도</Label>
+        <Label htmlFor="city" className="mb-2 block text-sm font-medium">시/도</Label>
         <Select
           id="city"
           value={filters.city || ''}
@@ -107,6 +109,7 @@ export function PropertyFilter({ filters, onFilterApply }: PropertyFilterProps) 
               updateFilter('district', undefined)
             }
           }}
+          className="h-11 md:h-10"
         >
           <option value="">전체</option>
           {CITIES.map((city) => (
@@ -118,11 +121,12 @@ export function PropertyFilter({ filters, onFilterApply }: PropertyFilterProps) 
       {/* District (Seoul only) */}
       {filters.city === '서울특별시' && (
         <div>
-          <Label htmlFor="district" className="mb-2 block">구/군</Label>
+          <Label htmlFor="district" className="mb-2 block text-sm font-medium">구/군</Label>
           <Select
             id="district"
             value={filters.district || ''}
             onChange={(e) => updateFilter('district', e.target.value || undefined)}
+            className="h-11 md:h-10"
           >
             <option value="">전체</option>
             {SEOUL_DISTRICTS.map((district) => (
@@ -133,13 +137,15 @@ export function PropertyFilter({ filters, onFilterApply }: PropertyFilterProps) 
       )}
 
       {/* Price Range */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label htmlFor="min_price" className="mb-2 block">최소 가격 (만원)</Label>
+          <Label htmlFor="min_price" className="mb-2 block text-sm font-medium">최소 가격 (만원)</Label>
           <Input
             id="min_price"
             type="number"
+            inputMode="numeric"
             placeholder="0"
+            className="h-11 md:h-10"
             defaultValue={filters.min_price ? filters.min_price / 10000 : ''}
             onChange={(e) => {
               const value = e.target.value ? Number(e.target.value) * 10000 : undefined
@@ -148,11 +154,13 @@ export function PropertyFilter({ filters, onFilterApply }: PropertyFilterProps) 
           />
         </div>
         <div>
-          <Label htmlFor="max_price" className="mb-2 block">최대 가격 (만원)</Label>
+          <Label htmlFor="max_price" className="mb-2 block text-sm font-medium">최대 가격 (만원)</Label>
           <Input
             id="max_price"
             type="number"
+            inputMode="numeric"
             placeholder="무제한"
+            className="h-11 md:h-10"
             defaultValue={filters.max_price ? filters.max_price / 10000 : ''}
             onChange={(e) => {
               const value = e.target.value ? Number(e.target.value) * 10000 : undefined
@@ -164,11 +172,12 @@ export function PropertyFilter({ filters, onFilterApply }: PropertyFilterProps) 
 
       {/* Rooms */}
       <div>
-        <Label htmlFor="rooms" className="mb-2 block">방 개수</Label>
+        <Label htmlFor="rooms" className="mb-2 block text-sm font-medium">방 개수</Label>
         <Select
           id="rooms"
           value={filters.rooms?.toString() || ''}
           onChange={(e) => updateFilter('rooms', e.target.value || undefined)}
+          className="h-11 md:h-10"
         >
           <option value="">전체</option>
           <option value="1">1개</option>
@@ -182,7 +191,7 @@ export function PropertyFilter({ filters, onFilterApply }: PropertyFilterProps) 
       {hasFilters && (
         <Button
           variant="outline"
-          className="w-full"
+          className="w-full h-11 md:h-10 touch-manipulation"
           onClick={clearFilters}
         >
           <X className="h-4 w-4 mr-2" />
