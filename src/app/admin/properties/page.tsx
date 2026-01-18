@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Plus, Pencil, Eye, Loader2, ChevronLeft, ChevronRight, Search } from 'lucide-react'
+import { Plus, Pencil, Eye, Loader2, ChevronLeft, ChevronRight, Search, Phone, Key, Banknote } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -193,6 +193,9 @@ export default function AdminPropertiesPage() {
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">유형</th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">가격</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                        집주인 정보
+                      </th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">상태</th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
                         등록일
@@ -218,6 +221,31 @@ export default function AdminPropertiesPage() {
                           {property.transaction_type === 'monthly'
                             ? `${formatPrice(property.deposit)}/${formatPrice(property.monthly_rent)}`
                             : formatPrice(property.price)}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="text-xs space-y-1">
+                            {property.owner_phone && (
+                              <div className="flex items-center gap-1 text-gray-700">
+                                <Phone className="h-3 w-3" />
+                                <span>{property.owner_phone}</span>
+                              </div>
+                            )}
+                            {property.door_password && (
+                              <div className="flex items-center gap-1 text-gray-500">
+                                <Key className="h-3 w-3" />
+                                <span>{property.door_password}</span>
+                              </div>
+                            )}
+                            {property.owner_desired_price && (
+                              <div className="flex items-center gap-1 text-orange-600">
+                                <Banknote className="h-3 w-3" />
+                                <span>희망 {formatPrice(property.owner_desired_price)}</span>
+                              </div>
+                            )}
+                            {!property.owner_phone && !property.door_password && !property.owner_desired_price && (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 py-3">
                           <select
@@ -272,24 +300,50 @@ export default function AdminPropertiesPage() {
                         {PROPERTY_STATUS[property.status as keyof typeof PROPERTY_STATUS]}
                       </Badge>
                     </div>
-                    <div className="flex items-center justify-between mt-3">
+                    <div className="flex items-center justify-between">
                       <p className="font-semibold text-primary">
                         {property.transaction_type === 'monthly'
                           ? `${formatPrice(property.deposit)}/${formatPrice(property.monthly_rent)}`
                           : formatPrice(property.price)}
                       </p>
-                      <div className="flex items-center gap-2">
-                        <Link href={`/properties/${property.id}`} target="_blank">
-                          <Button variant="ghost" size="sm">
-                            보기
-                          </Button>
-                        </Link>
-                        <Link href={`/admin/properties/${property.id}/edit`}>
-                          <Button variant="outline" size="sm">
-                            수정
-                          </Button>
-                        </Link>
+                    </div>
+                    {/* 집주인 정보 */}
+                    {(property.owner_phone || property.door_password || property.owner_desired_price) && (
+                      <div className="mt-3 p-2 bg-orange-50 rounded-md border border-orange-100">
+                        <p className="text-xs font-medium text-orange-700 mb-1">집주인 정보</p>
+                        <div className="text-xs space-y-1">
+                          {property.owner_phone && (
+                            <div className="flex items-center gap-1 text-gray-700">
+                              <Phone className="h-3 w-3" />
+                              <span>{property.owner_phone}</span>
+                            </div>
+                          )}
+                          {property.door_password && (
+                            <div className="flex items-center gap-1 text-gray-600">
+                              <Key className="h-3 w-3" />
+                              <span>비밀번호: {property.door_password}</span>
+                            </div>
+                          )}
+                          {property.owner_desired_price && (
+                            <div className="flex items-center gap-1 text-orange-600">
+                              <Banknote className="h-3 w-3" />
+                              <span>희망가: {formatPrice(property.owner_desired_price)}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
+                    )}
+                    <div className="flex items-center justify-end gap-2 mt-3">
+                      <Link href={`/properties/${property.id}`} target="_blank">
+                        <Button variant="ghost" size="sm">
+                          보기
+                        </Button>
+                      </Link>
+                      <Link href={`/admin/properties/${property.id}/edit`}>
+                        <Button variant="outline" size="sm">
+                          수정
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 ))}
