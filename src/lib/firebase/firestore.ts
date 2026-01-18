@@ -8,11 +8,9 @@ import {
   deleteDoc,
   query,
   where,
-  orderBy,
   limit,
   Timestamp,
   DocumentData,
-  QueryConstraint,
   increment
 } from 'firebase/firestore'
 import { db } from './config'
@@ -80,10 +78,10 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
       )
     }
 
-    // 최신순 정렬
-    properties.sort((a, b) => {
-      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0
-      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0
+    // 최신순 정렬 (created_at 또는 createdAt 필드 모두 지원)
+    properties.sort((a: any, b: any) => {
+      const dateA = a.created_at || a.createdAt ? new Date(a.created_at || a.createdAt).getTime() : 0
+      const dateB = b.created_at || b.createdAt ? new Date(b.created_at || b.createdAt).getTime() : 0
       return dateB - dateA
     })
 
@@ -202,13 +200,21 @@ export async function addPropertyImage(propertyId: string, imageData: DocumentDa
 export async function getInquiries(): Promise<Inquiry[]> {
   if (!db) return []
   try {
-    const q = query(collection(db, 'inquiries'), orderBy('created_at', 'desc'))
-    const snapshot = await getDocs(q)
+    const snapshot = await getDocs(collection(db, 'inquiries'))
 
-    return snapshot.docs.map(doc => ({
+    const inquiries = snapshot.docs.map(doc => ({
       id: doc.id,
       ...convertTimestamps(doc.data())
     })) as Inquiry[]
+
+    // 클라이언트 사이드 정렬 (최신순, created_at 또는 createdAt 필드 모두 지원)
+    inquiries.sort((a: any, b: any) => {
+      const dateA = a.created_at || a.createdAt ? new Date(a.created_at || a.createdAt).getTime() : 0
+      const dateB = b.created_at || b.createdAt ? new Date(b.created_at || b.createdAt).getTime() : 0
+      return dateB - dateA
+    })
+
+    return inquiries
   } catch (error) {
     console.error('Error fetching inquiries:', error)
     return []
@@ -235,13 +241,21 @@ export async function createInquiry(data: Omit<DocumentData, 'id' | 'created_at'
 export async function getConsultations() {
   if (!db) return []
   try {
-    const q = query(collection(db, 'consultations'), orderBy('preferred_date', 'asc'))
-    const snapshot = await getDocs(q)
+    const snapshot = await getDocs(collection(db, 'consultations'))
 
-    return snapshot.docs.map(doc => ({
+    const consultations = snapshot.docs.map(doc => ({
       id: doc.id,
       ...convertTimestamps(doc.data())
     }))
+
+    // 클라이언트 사이드 정렬 (예약 날짜 순, preferred_date 또는 preferredDate 필드 모두 지원)
+    consultations.sort((a: any, b: any) => {
+      const dateA = a.preferred_date || a.preferredDate ? new Date(a.preferred_date || a.preferredDate).getTime() : 0
+      const dateB = b.preferred_date || b.preferredDate ? new Date(b.preferred_date || b.preferredDate).getTime() : 0
+      return dateA - dateB
+    })
+
+    return consultations
   } catch (error) {
     console.error('Error fetching consultations:', error)
     return []
