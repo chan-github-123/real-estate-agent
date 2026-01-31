@@ -2,10 +2,11 @@
 
 import { useEffect, useState, Suspense, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Loader2, SlidersHorizontal } from 'lucide-react'
+import { Loader2, SlidersHorizontal, LayoutGrid, Map } from 'lucide-react'
 import { PropertyCard } from '@/components/property/PropertyCard'
 import { PropertyFilter } from '@/components/property/PropertyFilter'
 import { MobileFilterDrawer } from '@/components/property/MobileFilterDrawer'
+import { PropertyListMap } from '@/components/map/PropertyListMap'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { getProperties } from '@/lib/firebase/firestore'
@@ -55,6 +56,7 @@ function PropertiesPageContent() {
   const [loading, setLoading] = useState(true)
   const [sortBy, setSortBy] = useState('newest')
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
 
   const filters: PropertyFilters = useMemo(() => ({
     property_type: searchParams.get('property_type') as PropertyFilters['property_type'] || undefined,
@@ -96,19 +98,66 @@ function PropertiesPageContent() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">매물 검색</h1>
-        <Button
-          variant="outline"
-          className="lg:hidden"
-          onClick={() => setMobileFilterOpen(true)}
-        >
-          <SlidersHorizontal className="h-4 w-4 mr-2" />
-          필터
-          {activeFilterCount > 0 && (
-            <span className="ml-1 bg-primary text-primary-foreground text-xs rounded-full px-1.5">
-              {activeFilterCount}
-            </span>
-          )}
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* View Mode Toggle */}
+          <div className="hidden md:flex border rounded-lg p-1">
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className="h-8"
+            >
+              <LayoutGrid className="h-4 w-4 mr-1" />
+              리스트
+            </Button>
+            <Button
+              variant={viewMode === 'map' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('map')}
+              className="h-8"
+            >
+              <Map className="h-4 w-4 mr-1" />
+              지도
+            </Button>
+          </div>
+          <Button
+            variant="outline"
+            className="lg:hidden"
+            onClick={() => setMobileFilterOpen(true)}
+          >
+            <SlidersHorizontal className="h-4 w-4 mr-2" />
+            필터
+            {activeFilterCount > 0 && (
+              <span className="ml-1 bg-primary text-primary-foreground text-xs rounded-full px-1.5">
+                {activeFilterCount}
+              </span>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* Mobile View Toggle */}
+      <div className="md:hidden mb-4">
+        <div className="flex border rounded-lg p-1 w-full">
+          <Button
+            variant={viewMode === 'list' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('list')}
+            className="flex-1"
+          >
+            <LayoutGrid className="h-4 w-4 mr-1" />
+            리스트
+          </Button>
+          <Button
+            variant={viewMode === 'map' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('map')}
+            className="flex-1"
+          >
+            <Map className="h-4 w-4 mr-1" />
+            지도
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
@@ -119,24 +168,26 @@ function PropertiesPageContent() {
           </div>
         </aside>
 
-        {/* Property Grid */}
+        {/* Property Content - List or Map */}
         <main className="flex-1">
           {/* Search Results Header */}
           <div className="flex items-center justify-between mb-4 pb-4 border-b">
             <p className="text-sm text-muted-foreground">
               {loading ? '검색 중...' : `총 ${properties.length}개의 매물`}
             </p>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="text-sm border rounded-md px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              {SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            {viewMode === 'list' && (
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="text-sm border rounded-md px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           {loading ? (
@@ -148,6 +199,11 @@ function PropertiesPageContent() {
                 다른 조건으로 검색해보세요.
               </p>
             </div>
+          ) : viewMode === 'map' ? (
+            <PropertyListMap
+              properties={sortedProperties}
+              className="w-full h-[calc(100vh-300px)] min-h-[500px]"
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {sortedProperties.map((property) => (

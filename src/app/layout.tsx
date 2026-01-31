@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Noto_Sans_KR } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/components/providers/AuthProvider'
+import { KakaoMapScript } from '@/components/map/KakaoMapScript'
 
 const notoSansKR = Noto_Sans_KR({
   subsets: ['latin'],
@@ -54,6 +55,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className={notoSansKR.className}>
+        <KakaoMapScript />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

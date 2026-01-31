@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PropertyStatusBadge } from '@/components/property/PropertyStatusBadge'
 import { InquiryForm } from '@/components/inquiry/InquiryForm'
+import { PropertyMap } from '@/components/map/PropertyMap'
 import { getProperty } from '@/lib/firebase/firestore'
 import { formatPrice, formatMonthlyRent, formatArea, formatDate } from '@/lib/utils'
 import { PROPERTY_TYPES, TRANSACTION_TYPES } from '@/lib/constants'
@@ -253,6 +254,26 @@ export default function PropertyDetailPage() {
               </CardContent>
             </Card>
           )}
+
+          {/* Map */}
+          <Card>
+            <CardHeader>
+              <CardTitle>위치</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PropertyMap
+                address={property.address}
+                title={property.title}
+                className="w-full h-[300px] md:h-[400px]"
+              />
+              <div className="mt-3 md:mt-4">
+                <div className="flex items-start gap-2 text-sm md:text-base text-gray-600">
+                  <MapPin className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0 mt-0.5" />
+                  <span>{property.address}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Sidebar - Inquiry Form */}
