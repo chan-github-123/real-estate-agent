@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { MapPin, Maximize, BedDouble, Bath, Camera } from 'lucide-react'
@@ -14,7 +15,7 @@ interface PropertyCardProps {
   showStatus?: boolean
 }
 
-export function PropertyCard({ property, showStatus = false }: PropertyCardProps) {
+export const PropertyCard = memo(function PropertyCard({ property, showStatus = false }: PropertyCardProps) {
   const primaryImage = property.property_images?.find((img) => img.is_primary)
   const imageUrl = primaryImage?.url || '/images/placeholder-property.jpg'
 
@@ -120,4 +121,4 @@ export function PropertyCard({ property, showStatus = false }: PropertyCardProps
       </Card>
     </Link>
   )
-}
+})

@@ -7,11 +7,34 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    // Check API key first
+    if (!process.env.GEMINI_API_KEY) {
+      console.error('GEMINI_API_KEY is not configured')
+      return NextResponse.json(
+        { error: 'AI service is not configured properly' },
+        { status: 500 }
+      )
+    }
+
+    // Parse and validate request body
+    let body
+    try {
+      body = await request.json()
+    } catch (parseError) {
+      return NextResponse.json(
+        { error: 'Invalid request body' },
+        { status: 400 }
+      )
+    }
+
     const { propertyType, transactionType, area, rooms, bathrooms, floor, features, address, city, district } = body
 
-    if (!process.env.GEMINI_API_KEY) {
-      return NextResponse.json({ error: 'AI API key not configured' }, { status: 500 })
+    // Basic validation - at least some property info should be provided
+    if (!area && !rooms && !propertyType) {
+      return NextResponse.json(
+        { error: 'Insufficient property information provided' },
+        { status: 400 }
+      )
     }
 
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
@@ -38,9 +61,33 @@ export async function POST(request: NextRequest) {
     const response = await result.response
     const description = response.text()
 
+    if (!description) {
+      throw new Error('Empty response from AI model')
+    }
+
     return NextResponse.json({ description })
   } catch (error) {
     console.error('AI generation error:', error)
-    return NextResponse.json({ error: 'Failed to generate description' }, { status: 500 })
+
+    // Handle specific error types
+    if (error instanceof Error) {
+      if (error.message.includes('API key')) {
+        return NextResponse.json(
+          { error: 'AI service authentication failed' },
+          { status: 500 }
+        )
+      }
+      if (error.message.includes('quota') || error.message.includes('limit')) {
+        return NextResponse.json(
+          { error: 'AI service quota exceeded. Please try again later' },
+          { status: 429 }
+        )
+      }
+    }
+
+    return NextResponse.json(
+      { error: 'Failed to generate description. Please try again' },
+      { status: 500 }
+    )
   }
 }

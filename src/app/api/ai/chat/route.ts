@@ -7,11 +7,41 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    // Check API key first
+    if (!process.env.GEMINI_API_KEY) {
+      console.error('GEMINI_API_KEY is not configured')
+      return NextResponse.json(
+        { error: 'AI service is not configured properly' },
+        { status: 500 }
+      )
+    }
+
+    // Parse and validate request body
+    let body
+    try {
+      body = await request.json()
+    } catch (parseError) {
+      return NextResponse.json(
+        { error: 'Invalid request body' },
+        { status: 400 }
+      )
+    }
+
     const { message, context } = body
 
-    if (!process.env.GEMINI_API_KEY) {
-      return NextResponse.json({ error: 'AI API key not configured' }, { status: 500 })
+    // Validate message
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      return NextResponse.json(
+        { error: 'Message is required and must be a non-empty string' },
+        { status: 400 }
+      )
+    }
+
+    if (message.length > 1000) {
+      return NextResponse.json(
+        { error: 'Message is too long (max 1000 characters)' },
+        { status: 400 }
+      )
     }
 
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
@@ -40,9 +70,33 @@ ${context ? `현재 보고 있는 매물 정보:\n${context}` : ''}`
     const response = await result.response
     const reply = response.text()
 
+    if (!reply) {
+      throw new Error('Empty response from AI model')
+    }
+
     return NextResponse.json({ reply })
   } catch (error) {
     console.error('AI chat error:', error)
-    return NextResponse.json({ error: 'Failed to process chat' }, { status: 500 })
+
+    // Handle specific error types
+    if (error instanceof Error) {
+      if (error.message.includes('API key')) {
+        return NextResponse.json(
+          { error: 'AI service authentication failed' },
+          { status: 500 }
+        )
+      }
+      if (error.message.includes('quota') || error.message.includes('limit')) {
+        return NextResponse.json(
+          { error: 'AI service quota exceeded. Please try again later' },
+          { status: 429 }
+        )
+      }
+    }
+
+    return NextResponse.json(
+      { error: 'Failed to process your request. Please try again' },
+      { status: 500 }
+    )
   }
 }

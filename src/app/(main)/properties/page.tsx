@@ -1,8 +1,6 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, Suspense, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Loader2, SlidersHorizontal } from 'lucide-react'
 import { PropertyCard } from '@/components/property/PropertyCard'
@@ -58,7 +56,7 @@ function PropertiesPageContent() {
   const [sortBy, setSortBy] = useState('newest')
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
 
-  const filters: PropertyFilters = {
+  const filters: PropertyFilters = useMemo(() => ({
     property_type: searchParams.get('property_type') as PropertyFilters['property_type'] || undefined,
     transaction_type: searchParams.get('transaction_type') as PropertyFilters['transaction_type'] || undefined,
     city: searchParams.get('city') || undefined,
@@ -67,7 +65,7 @@ function PropertiesPageContent() {
     max_price: searchParams.get('max_price') ? Number(searchParams.get('max_price')) : undefined,
     rooms: searchParams.get('rooms') ? Number(searchParams.get('rooms')) : undefined,
     search: searchParams.get('search') || undefined,
-  }
+  }), [searchParams])
 
   useEffect(() => {
     async function fetchProperties() {
@@ -77,7 +75,7 @@ function PropertiesPageContent() {
       setLoading(false)
     }
     fetchProperties()
-  }, [searchParams])
+  }, [filters])
 
   const sortedProperties = [...properties].sort((a, b) => {
     switch (sortBy) {

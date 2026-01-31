@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -61,6 +61,16 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
     initialData?.property_images || []
   )
   const [isGeneratingAI, setIsGeneratingAI] = useState(false)
+
+  // Cleanup object URLs to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      images.forEach((image) => {
+        const url = URL.createObjectURL(image)
+        URL.revokeObjectURL(url)
+      })
+    }
+  }, [images])
 
   const {
     register,
@@ -242,24 +252,27 @@ export function PropertyForm({ initialData, mode }: PropertyFormProps) {
         if (result.error) throw new Error(result.error)
       }
 
-      // Upload new images
-      if (propertyId) {
-        for (let i = 0; i < images.length; i++) {
-          const file = images[i]
-          const filePath = generateImagePath(propertyId, file.name)
+      // Upload new images in parallel
+      if (propertyId && images.length > 0) {
+        const uploadPromises = images.map(async (file, i) => {
+          const filePath = generateImagePath(propertyId!, file.name)
 
           try {
-            const url = await uploadImage(file, filePath)
-            await addPropertyImage(propertyId, {
-              url: url,
-              storage_path: filePath,
-              order_index: existingImages.length + i,
-              is_primary: existingImages.length === 0 && i === 0,
-            })
+            const result = await uploadImage(file, filePath)
+            if (result) {
+              await addPropertyImage(propertyId!, {
+                url: result.url,
+                storage_path: result.path,
+                order_index: existingImages.length + i,
+                is_primary: existingImages.length === 0 && i === 0,
+              })
+            }
           } catch (uploadError) {
             console.error('Error uploading image:', uploadError)
           }
-        }
+        })
+
+        await Promise.all(uploadPromises)
       }
 
       router.push('/admin/properties')

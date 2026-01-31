@@ -1,7 +1,13 @@
+import dynamic from 'next/dynamic'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
-import { ChatBot } from '@/components/chat/ChatBot'
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav'
+
+// Lazy load ChatBot for better initial page load performance
+const ChatBot = dynamic(
+  () => import('@/components/chat/ChatBot').then((mod) => ({ default: mod.ChatBot })),
+  { ssr: false }
+)
 
 export default function MainLayout({
   children,

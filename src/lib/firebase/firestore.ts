@@ -79,9 +79,9 @@ export async function getProperties(filters?: PropertyFilters): Promise<Property
     }
 
     // 최신순 정렬 (created_at 또는 createdAt 필드 모두 지원)
-    properties.sort((a: any, b: any) => {
-      const dateA = a.created_at || a.createdAt ? new Date(a.created_at || a.createdAt).getTime() : 0
-      const dateB = b.created_at || b.createdAt ? new Date(b.created_at || b.createdAt).getTime() : 0
+    properties.sort((a, b) => {
+      const dateA = (a as any).created_at || (a as any).createdAt ? new Date((a as any).created_at || (a as any).createdAt).getTime() : 0
+      const dateB = (b as any).created_at || (b as any).createdAt ? new Date((b as any).created_at || (b as any).createdAt).getTime() : 0
       return dateB - dateA
     })
 
@@ -208,9 +208,9 @@ export async function getInquiries(): Promise<Inquiry[]> {
     })) as Inquiry[]
 
     // 클라이언트 사이드 정렬 (최신순, created_at 또는 createdAt 필드 모두 지원)
-    inquiries.sort((a: any, b: any) => {
-      const dateA = a.created_at || a.createdAt ? new Date(a.created_at || a.createdAt).getTime() : 0
-      const dateB = b.created_at || b.createdAt ? new Date(b.created_at || b.createdAt).getTime() : 0
+    inquiries.sort((a, b) => {
+      const dateA = (a as any).created_at || (a as any).createdAt ? new Date((a as any).created_at || (a as any).createdAt).getTime() : 0
+      const dateB = (b as any).created_at || (b as any).createdAt ? new Date((b as any).created_at || (b as any).createdAt).getTime() : 0
       return dateB - dateA
     })
 
@@ -249,9 +249,9 @@ export async function getConsultations() {
     }))
 
     // 클라이언트 사이드 정렬 (예약 날짜 순, preferred_date 또는 preferredDate 필드 모두 지원)
-    consultations.sort((a: any, b: any) => {
-      const dateA = a.preferred_date || a.preferredDate ? new Date(a.preferred_date || a.preferredDate).getTime() : 0
-      const dateB = b.preferred_date || b.preferredDate ? new Date(b.preferred_date || b.preferredDate).getTime() : 0
+    consultations.sort((a, b) => {
+      const dateA = (a as any).preferred_date || (a as any).preferredDate ? new Date((a as any).preferred_date || (a as any).preferredDate).getTime() : 0
+      const dateB = (b as any).preferred_date || (b as any).preferredDate ? new Date((b as any).preferred_date || (b as any).preferredDate).getTime() : 0
       return dateA - dateB
     })
 

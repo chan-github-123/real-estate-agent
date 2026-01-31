@@ -18,11 +18,28 @@ let auth: Auth | undefined
 let db: Firestore | undefined
 let storage: FirebaseStorage | undefined
 
-if (typeof window !== 'undefined' && firebaseConfig.apiKey) {
-  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
-  auth = getAuth(app)
-  db = getFirestore(app)
-  storage = getStorage(app)
+if (typeof window !== 'undefined') {
+  if (!firebaseConfig.apiKey) {
+    console.warn('Firebase configuration is missing. Please check your environment variables.')
+  } else {
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+    auth = getAuth(app)
+    db = getFirestore(app)
+    storage = getStorage(app)
+  }
+}
+
+// Helper function to ensure Firebase is initialized
+export function ensureFirebaseInitialized(): boolean {
+  if (typeof window === 'undefined') {
+    console.warn('Firebase can only be initialized on the client side')
+    return false
+  }
+  if (!db || !auth || !storage) {
+    console.warn('Firebase has not been initialized properly')
+    return false
+  }
+  return true
 }
 
 export { auth, db, storage }

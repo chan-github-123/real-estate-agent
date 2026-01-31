@@ -1,3 +1,5 @@
+const { withSentryConfig } = require('@sentry/nextjs')
+
 const withPWA = require('next-pwa')({
   dest: 'public',
   register: true,
@@ -90,16 +92,29 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '*.supabase.co',
-        pathname: '/storage/v1/object/public/**',
-      },
-      {
-        protocol: 'https',
         hostname: 'firebasestorage.googleapis.com',
         pathname: '/**',
       },
     ],
   },
+  // Enable experimental instrumentation for Sentry
+  experimental: {
+    instrumentationHook: true,
+  },
 }
 
-module.exports = withPWA(nextConfig)
+// Sentry configuration options
+const sentryWebpackPluginOptions = {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent: true,
+  widenClientFileUpload: true,
+  hideSourceMaps: true,
+  disableLogger: true,
+}
+
+// Export the configuration with Sentry and PWA
+module.exports = withSentryConfig(
+  withPWA(nextConfig),
+  sentryWebpackPluginOptions
+)

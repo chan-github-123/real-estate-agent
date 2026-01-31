@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, memo } from 'react'
 import { MessageCircle, X, Send, Loader2, Bot, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,7 +11,7 @@ interface Message {
   content: string
 }
 
-export function ChatBot() {
+export const ChatBot = memo(function ChatBot() {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -180,4 +180,4 @@ export function ChatBot() {
       </div>
     </>
   )
-}
+})
